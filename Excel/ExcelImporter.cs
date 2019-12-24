@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Jetsons.JetPack;
 using OfficeOpenXml;
 
-namespace Jetsons.JetPack.Excel {
+namespace Jetsons.Excel {
 	public static class ExcelImporter {
 
 	
@@ -21,7 +21,7 @@ namespace Jetsons.JetPack.Excel {
 		/// <param name="columnProps">Provide the properties per column, if known</param>
 		/// <param name="onlySheetsNamed">Only returns the sheets with the given name.</param>
 		/// <returns></returns>
-		public static ExcelResults<T> ImportXlsx<T>(string excelPath, ExcelHeaders headers, List<string> columnProps = null, List<string> onlySheetsNamed = null) {
+		public static ExcelResults<T> ImportXlsx<T>(string excelPath, ExcelHeaders headers, List<string> columnProps = null, List<string> onlySheetsNamed = null, bool skipBlankRows = true) {
 
 			var results = new ExcelResults<T>();
 			
@@ -40,8 +40,13 @@ namespace Jetsons.JetPack.Excel {
 			// per sheet
 			foreach (var sheet in workbook.Worksheets) {
 				
-				// filter by worksheet name if watned
+				// filter by worksheet name if wanted
 				if (onlySheetsNamed != null && !onlySheetsNamed.Contains(sheet.Name)) {
+					continue;
+				}
+
+				// skip the sheet if it is blank
+				if (sheet.Dimension == null) {
 					continue;
 				}
 
@@ -57,30 +62,58 @@ namespace Jetsons.JetPack.Excel {
 				// calc starting row based on header config
 				var startRow = headers == ExcelHeaders.None ? 1 : 2;
 
-				// per row
+				// get the size of the sheet
 				int rowCount = sheet.Dimension.End.Row;
 				int colCount = sheet.Dimension.End.Column;
-				for (int r = startRow; r < rowCount; r++) {
-					
+
+				// read the headers of the first row if wanted and not given
+				if (headers == ExcelHeaders.FirstRow && !sheetResult.Headers.Exists()) {
+
+					// per cell
+					for (int c = 1; c <= colCount; c++) {
+
+						// register the header based on the cell text
+						var text = sheet.Cells[1, c].Text.Trim();
+						if (text.Exists()) {
+							sheetResult.Headers.Add(text);
+						}
+					}
+				}
+
+				// per row
+				for (int r = startRow; r <= rowCount; r++) {
+
 					// create a new data object for the row
 					var row = Activator.CreateInstance<T>();
-					sheetResult.Data.Add(row);
-					
+
+					// check for blank rows
+					var isBlankRow = true;
+
 					// per cell
-					for (int c = 1; c < colCount; c++) {
+					for (int c = 1; c <= colCount; c++) {
 						
-						var text = sheet.Cells[r, c].Text.Trim();
 						var prop = GetPropName(c-1, sheetResult);
+						var text = sheet.Cells[r, c].Text.Trim();
 
 						// skip if column name not given
 						if (prop == null) {
 							continue;
 						}
-						
+
 						// store this value in the row object
 						row.SetPropValue(prop, text);
 
+						// check for blank rows
+						if (text.Exists()) {
+							isBlankRow = false;
+						}
 					
+					}
+
+					// skip blank rows if wanted
+					if (skipBlankRows && isBlankRow) {
+					}else{
+						sheetResult.Data.Add(row);
 					}
 				}
 			}

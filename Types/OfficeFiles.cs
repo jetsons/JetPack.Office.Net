@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using TikaOnDotNet.TextExtraction;
-using Jetsons.JetPack.Excel;
+using Jetsons.Excel;
 
 namespace Jetsons.JetPack
 {
@@ -27,9 +27,10 @@ namespace Jetsons.JetPack
 		/// <param name="headers">Read the first line of each sheet as the column headers?</param>
 		/// <param name="columnProps">Provide the properties per column, if known</param>
 		/// <param name="onlySheetsNamed">Only returns the sheets with the given name.</param>
+		/// <param name="skipBlankRows">Skips rows where all the cells are blank.</param>
 		/// <returns></returns>
-		public static ExcelResults<T> LoadXLSX<T>(this string excelPath, ExcelHeaders headers, List<string> columnProps = null, List<string> onlySheetsNamed = null) {
-			return ExcelImporter.ImportXlsx<T>(excelPath, headers, columnProps, onlySheetsNamed);
+		public static ExcelResults<T> LoadXLSX<T>(this string excelPath, ExcelHeaders headers, List<string> columnProps = null, List<string> onlySheetsNamed = null, bool skipBlankRows = true) {
+			return ExcelImporter.ImportXlsx<T>(excelPath, headers, columnProps, onlySheetsNamed, skipBlankRows);
 		}
 		
 		/// <summary>

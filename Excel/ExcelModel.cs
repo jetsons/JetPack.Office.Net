@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Jetsons.JetPack;
 
-namespace Jetsons.JetPack.Excel {
+namespace Jetsons.Excel {
 
 	public class ExcelResults<T> {
 
