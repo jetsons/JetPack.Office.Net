@@ -7,7 +7,7 @@
 
 To use this simply grab our Nuget package `Jetsons.JetPack.Office` and add this to the top of your class:
 
-    using Jetsons.JetPack.Office;
+    using Jetsons.JetPack;
 	
 This statement unlocks all the extension methods below. Enjoy!
 
